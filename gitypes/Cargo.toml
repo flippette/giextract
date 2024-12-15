@@ -1,0 +1,16 @@
+[package]
+name = "gitypes"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "GEL IELTS API types."
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+dotenvy.workspace = true
+reqwest.workspace = true
+tokextract.workspace = true
+tokio.workspace = true
