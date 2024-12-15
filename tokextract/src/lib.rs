@@ -3,6 +3,14 @@
 //! This module interacts with a browser through the WebDriver API to extract
 //! the cookie containing the API token.
 
-pub mod server;
+#![allow(async_fn_in_trait)]
+
+mod server;
+mod util;
+
+mod private {
+    pub trait Sealed {}
+}
 
 pub use server::Server;
+pub use util::ElementExt;
