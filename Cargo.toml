@@ -1,0 +1,31 @@
+[workspace]
+resolver = "3"
+members = []
+
+[workspace.dependencies]
+color-eyre = "0.6"
+dotenvy = "0.15"
+eyre = "0.6"
+serde_json = "1"
+tracing = "0.1"
+
+[workspace.dependencies.fantoccini]
+version = "0.21"
+default-features = false
+
+[workspace.dependencies.reqwest]
+version = "0.12"
+default-features = false
+features = ["charset", "gzip", "http2", "rustls-tls"]
+
+[workspace.dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[workspace.dependencies.tokio]
+version = "1"
+features = ["macros", "rt", "time"]
+
+[workspace.dependencies.tracing-subscriber]
+version = "0.3"
+features = ["env-filter", "registry"]
