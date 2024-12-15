@@ -22,7 +22,7 @@ pub use util::ElementExt;
 /// This test uses the environment variable `GITOK_HEAD`.
 #[cfg(test)]
 #[tokio::test]
-async fn get_token() {
+async fn get_token_ok() {
     use std::{env, time::Duration};
 
     use tokio::time;
