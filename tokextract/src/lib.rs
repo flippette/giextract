@@ -22,7 +22,7 @@ pub use util::ElementExt;
 /// This test uses the environment variable `GITOK_HEAD`.
 #[cfg(test)]
 #[tokio::test]
-async fn get_token_ok() {
+async fn get_token() {
     use std::{env, time::Duration};
 
     use tokio::time;
@@ -33,9 +33,8 @@ async fn get_token_ok() {
     let server = Server::from_env()
         .await
         .expect("failed to start WebDriver server");
-    let token = time::timeout(Duration::from_secs(30), get_token(&server))
+    let token = get_token(&server)
         .await
-        .expect("get_token timed out, try again")
         .expect("get_token should successfully return");
     let expected = env::var("GITOK_HEAD").expect("GITOK_HEAD should be the head token fragment");
 

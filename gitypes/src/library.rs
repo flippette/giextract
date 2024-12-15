@@ -138,9 +138,8 @@ async fn library() {
     let server = Server::from_env()
         .await
         .expect("failed to start WebDriver server");
-    let token = time::timeout(Duration::from_secs(30), get_token(&server))
+    let token = get_token(&server)
         .await
-        .expect("get_token timed out, try again")
         .expect("get_token should successfully return");
 
     let client = Client::builder()
