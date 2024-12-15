@@ -1,6 +1,10 @@
 [workspace]
 resolver = "3"
-members = []
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["flippette <me@flippo.cc>"]
 
 [workspace.dependencies]
 color-eyre = "0.6"
