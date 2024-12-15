@@ -360,6 +360,8 @@ dependencies = [
  "thiserror 2.0.7",
  "tokextract",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1337,6 +1339,7 @@ dependencies = [
  "fantoccini",
  "hyper-util",
  "serde_json",
+ "thiserror 2.0.7",
  "tokio",
  "tracing",
  "tracing-subscriber",

@@ -2,10 +2,14 @@
 
 use std::env;
 
-use eyre::{OptionExt, Result, WrapErr};
-use fantoccini::{ClientBuilder, Locator, key::Key};
+use fantoccini::{
+    ClientBuilder, Locator,
+    error::{CmdError, NewSessionError},
+    key::Key,
+};
 use hyper_util::client::legacy::connect::HttpConnector;
 use serde_json::json;
+use thiserror::Error;
 use tracing::info;
 
 use crate::{ElementExt, Server};
@@ -17,26 +21,30 @@ use crate::{ElementExt, Server};
 ///
 /// This function uses the following environment variables: `GIMAIL`, `GIPASS`,
 /// `WEBDRIVER_HEADLESS`, and `WEBDRIVER_KEEPALIVE`.
-pub async fn get_token(_: &Server) -> Result<String> {
-    let email = env::var("GIMAIL").wrap_err("GIMAIL should be an email address")?;
-    let passwd = env::var("GIPASS").wrap_err("GIPASS should be a password")?;
+pub async fn get_token(_: &Server) -> Result<String, TokenError> {
+    let email = env::var("GIMAIL")?;
+    let passwd = env::var("GIPASS")?;
 
-    let caps = match env::var("WEBDRIVER_HEADLESS")
-        .ok()
-        .and_then(|s| s.parse().ok())
-    {
-        Some(true) => {
-            info!("WEBDRIVER_HEADLESS is set to true, running in headless mode");
-            json!({
-                "goog:chromeOptions": { "args": ["headless", "disable-gpu"] },
-                "moz:firefoxOptions": { "args": ["-headless"] },
-                "ms:edgeOptions": { "args": ["--headless"] }
-            })
-        }
-        _ => json!({}),
-    }
+    let caps = match env::var("WEBDRIVER_HEADLESS") {
+        Ok(s) => match s.parse() {
+            Err(_) => Err(TokenError::EnvMalformed(
+                String::from("WEBDRIVER_HEADLESS"),
+                s,
+            )),
+            Ok(false) => Ok(json!({})),
+            Ok(true) => {
+                info!("WEBDRIVER_HEADLESS is set to true, running in headless mode");
+                Ok(json!({
+                    "goog:chromeOptions": { "args": ["headless", "disable-gpu"] },
+                    "moz:firefoxOptions": { "args": ["-headless"] },
+                    "ms:edgeOptions": { "args": ["--headless"] }
+                }))
+            }
+        },
+        Err(_) => Ok(json!({})),
+    }?
     .as_object()
-    .ok_or_eyre("hardcoded json should be correct")?
+    .expect("hardcoded JSON should be correct")
     .to_owned();
 
     let driver = ClientBuilder::new(HttpConnector::new())
@@ -105,4 +113,23 @@ pub async fn get_token(_: &Server) -> Result<String> {
     }
 
     Ok(cookie)
+}
+
+#[derive(Debug, Error)]
+pub enum TokenError {
+    #[error("failed to read environment variable: {0}")]
+    EnvRead(#[from] env::VarError),
+    #[error("environment variable {0} malformed: {1:?}")]
+    EnvMalformed(String, String),
+    #[error("failed to create new WebDriver session: {0}")]
+    SessionCreateError(#[from] NewSessionError),
+    #[error("WebDriver command error: {0}")]
+    WebDriverCommandError(#[from] CmdError),
+}
+
+impl TokenError {
+    /// Checks if the error is a [`CmdError::WaitTimeout`].
+    pub fn is_timeout(&self) -> bool {
+        matches!(self, Self::WebDriverCommandError(CmdError::WaitTimeout))
+    }
 }

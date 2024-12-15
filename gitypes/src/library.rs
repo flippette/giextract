@@ -124,22 +124,36 @@ impl From<Exercise> for ExerciseRaw {
 #[cfg(test)]
 #[tokio::test]
 async fn library() {
-    use std::env;
+    use std::{env, io};
 
     use reqwest::Client;
     use tokextract::{Server, get_token};
+    use tracing::{error, info};
+    use tracing_subscriber::EnvFilter;
 
     const API_URL: &str = "https://api-britishcouncil.gelielts.com";
 
     let _ = dotenvy::from_filename(".env");
     let _ = dotenvy::from_filename(".envrc");
 
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .with_writer(io::stderr)
+        .compact()
+        .init();
+
     let server = Server::from_env()
         .await
         .expect("failed to start WebDriver server");
-    let token = get_token(&server)
-        .await
-        .expect("get_token should successfully return");
+    info!("WebDriver server started");
+    let token = loop {
+        match get_token(&server).await {
+            Ok(tok) => break tok,
+            Err(err) if err.is_timeout() => error!("get_token timed out, retrying"),
+            Err(err) => panic!("get_token error: {err}"),
+        }
+    };
+    info!("got token");
 
     let client = Client::builder()
         .user_agent(concat!(
@@ -149,6 +163,7 @@ async fn library() {
         ))
         .build()
         .expect("reqwest client should build successfully");
+    info!("built reqwest client");
 
     let res = client
         .get(format!("{API_URL}/ielts/library/practice-tests/reading"))
@@ -156,10 +171,10 @@ async fn library() {
         .send()
         .await
         .expect("library request should succeed");
+    info!("got library response");
 
     let library = res.json::<Library>().await;
-
-    println!("{library:?}");
+    info!("got library json body: {library:?}");
 
     assert!(
         library.is_ok(),
