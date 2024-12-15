@@ -357,7 +357,6 @@ dependencies = [
  "dotenvy",
  "reqwest",
  "serde",
- "thiserror 2.0.7",
  "tokextract",
  "tokio",
  "tracing",

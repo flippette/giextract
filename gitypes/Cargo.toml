@@ -7,7 +7,6 @@ description = "GEL IELTS API types."
 
 [dependencies]
 serde.workspace = true
-thiserror.workspace = true
 
 [dev-dependencies]
 dotenvy.workspace = true
