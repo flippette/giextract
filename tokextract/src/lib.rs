@@ -37,8 +37,7 @@ async fn get_token_ok() {
         .await
         .expect("get_token timed out, try again")
         .expect("get_token should successfully return");
-    let expected =
-        env::var("GITOK_HEAD").expect("GITOK_HEAD should be the first 8 chars of the token");
+    let expected = env::var("GITOK_HEAD").expect("GITOK_HEAD should be the head token fragment");
 
-    assert_eq!(&token[..8], expected);
+    assert_eq!(&token[..expected.len()], expected);
 }
