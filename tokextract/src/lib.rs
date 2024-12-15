@@ -23,9 +23,7 @@ pub use util::ElementExt;
 #[cfg(test)]
 #[tokio::test]
 async fn get_token_ok() {
-    use std::{env, time::Duration};
-
-    use tokio::time;
+    use std::env;
 
     let _ = dotenvy::from_filename(".env");
     let _ = dotenvy::from_filename(".envrc");

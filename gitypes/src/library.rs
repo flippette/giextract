@@ -124,11 +124,10 @@ impl From<Exercise> for ExerciseRaw {
 #[cfg(test)]
 #[tokio::test]
 async fn library() {
-    use std::{env, time::Duration};
+    use std::env;
 
     use reqwest::Client;
     use tokextract::{Server, get_token};
-    use tokio::time;
 
     const API_URL: &str = "https://api-britishcouncil.gelielts.com";
 
