@@ -18,6 +18,10 @@ tracing = "0.1"
 version = "0.21"
 default-features = false
 
+[workspace.dependencies.hyper-util]
+version = "0.1"
+features = ["client-legacy"]
+
 [workspace.dependencies.reqwest]
 version = "0.12"
 default-features = false

@@ -879,6 +879,7 @@ dependencies = [
  "dotenvy",
  "eyre",
  "fantoccini",
+ "hyper-util",
  "serde_json",
  "tokio",
  "tracing",
