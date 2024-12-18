@@ -1,8 +1,9 @@
 use std::io;
 
-use eyre::Result;
+use eyre::{Result, bail};
 use tokextract::Server;
 use tokio::main;
+use tracing::error;
 use tracing_subscriber::EnvFilter;
 
 #[main(flavor = "current_thread")]
@@ -19,7 +20,16 @@ async fn main() -> Result<()> {
 
     let server = Server::from_env().await?;
 
-    println!("{}", tokextract::get_token(&server).await?);
+    loop {
+        match tokextract::get_token(&server).await {
+            Ok(tok) => {
+                println!("{tok}");
+                break;
+            }
+            Err(err) if err.is_timeout() => error!("timed out, retrying"),
+            Err(err) => bail!(err),
+        }
+    }
 
     Ok(())
 }
