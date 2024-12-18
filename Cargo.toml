@@ -1,7 +1,28 @@
 [package]
 name = "giextract"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 authors = ["flippette <me@flippo.cc>"]
 
 [dependencies]
+color-eyre = "0.6"
+dotenvy = "0.15"
+eyre = "0.6"
+serde_json = "1"
+tracing = "0.1"
+
+[dependencies.fantoccini]
+version = "0.21"
+default-features = false
+
+[dependencies.hyper-util]
+version = "0.1"
+features = ["client-legacy"]
+
+[dependencies.tokio]
+version = "1"
+features = ["macros", "rt", "time"]
+
+[dependencies.tracing-subscriber]
+version = "0.3"
+features = ["env-filter"]
