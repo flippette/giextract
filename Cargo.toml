@@ -1,0 +1,7 @@
+[package]
+name = "giextract"
+version = "0.1.0"
+edition = "2024"
+authors = ["flippette <me@flippo.cc>"]
+
+[dependencies]
