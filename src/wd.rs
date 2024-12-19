@@ -10,7 +10,7 @@ use std::{
 use fantoccini::{
     actions::{InputSource, KeyAction, KeyActions},
     elements::Element,
-    error::CmdError,
+    error::{CmdError, NewSessionError},
     key::Key,
 };
 use hyper_util::client::legacy::connect::HttpConnector;
@@ -70,7 +70,7 @@ impl Client {
         _server: &Server,
         headless: bool,
         keepalive: bool,
-    ) -> Result<Self, fantoccini::error::NewSessionError> {
+    ) -> Result<Self, NewSessionError> {
         const RETRY_DELAY: Duration = Duration::from_millis(250);
 
         let caps = match headless {

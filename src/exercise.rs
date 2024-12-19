@@ -1,6 +1,8 @@
 //! Exercise data extraction.
 
+use fantoccini::error::{CmdError, NewSessionError};
 use serde::Deserialize;
+use thiserror::Error;
 
 use crate::{API_URL, REFERER};
 
@@ -13,19 +15,29 @@ pub struct Exercise {
     pub answers: Option<Vec<String>>,
 }
 
+#[derive(Debug, Error)]
+pub enum ExerciseError {
+    #[error("reqwest error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("webdriver session error: {0}")]
+    WebDriverSession(#[from] NewSessionError),
+    #[error("webdriver command error: {0}")]
+    WebDriverCommand(#[from] CmdError),
+}
+
 impl Exercise {
     pub async fn fetch_id(
-        client: &reqwest::Client,
+        rq_client: &reqwest::Client,
         token: &str,
         id: u32,
-    ) -> Result<Self, reqwest::Error> {
+    ) -> Result<Self, ExerciseError> {
         #[derive(Deserialize)]
         struct ApiData {
             instructions: String,
             general_question: String,
         }
 
-        let api_data = client
+        let api_data = rq_client
             .get(format!("{API_URL}/exercise/{id}"))
             .bearer_auth(token)
             .header("referer", REFERER)
