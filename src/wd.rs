@@ -4,11 +4,18 @@ use std::{
     io,
     ops::Deref,
     process::{Child, Command, Stdio},
+    time::Duration,
 };
 
+use fantoccini::{
+    actions::{InputSource, KeyAction, KeyActions},
+    elements::Element,
+    error::CmdError,
+    key::Key,
+};
 use hyper_util::client::legacy::connect::HttpConnector;
 use serde_json::json;
-use tokio::runtime;
+use tokio::{runtime, time};
 use tracing::{error, info};
 
 /// Wrapper for spawning and killing a WebDriver server.
@@ -22,6 +29,12 @@ pub struct Server {
 pub struct Client {
     inner: fantoccini::Client,
     keepalive: bool,
+}
+
+/// Extension trait for [`fantoccini::elements::Element`].
+pub trait ElementExt {
+    async fn scroll_into_view(&self) -> Result<(), CmdError>;
+    async fn send_key(&self, key: Key) -> Result<(), CmdError>;
 }
 
 impl Server {
@@ -58,6 +71,8 @@ impl Client {
         headless: bool,
         keepalive: bool,
     ) -> Result<Self, fantoccini::error::NewSessionError> {
+        const RETRY_DELAY: Duration = Duration::from_millis(250);
+
         let caps = match headless {
             false => json!({}),
             true => json!({
@@ -70,11 +85,18 @@ impl Client {
         .cloned()
         .expect("hardcoded JSON should be correct");
 
+        let mut builder = fantoccini::ClientBuilder::new(HttpConnector::new());
+        let builder = builder.capabilities(caps);
         Ok(Self {
-            inner: fantoccini::ClientBuilder::new(HttpConnector::new())
-                .capabilities(caps)
-                .connect("http://localhost:4444")
-                .await?,
+            inner: loop {
+                match builder.connect("http://localhost:4444").await {
+                    Ok(client) => break client,
+                    Err(err) => {
+                        error!("failed to connect to WebDriver server, retrying: {err}");
+                        time::sleep(RETRY_DELAY).await;
+                    }
+                }
+            },
             keepalive,
         })
     }
@@ -97,5 +119,31 @@ impl Drop for Client {
                 runtime::Handle::current().spawn(self.inner.clone().close());
             }
         }
+    }
+}
+
+impl ElementExt for Element {
+    async fn scroll_into_view(&self) -> Result<(), CmdError> {
+        const JS: &str = "arguments[0].scrollIntoView();";
+
+        self.clone()
+            .client()
+            .execute(JS, vec![serde_json::to_value(self)?])
+            .await
+            .map(drop)
+    }
+
+    async fn send_key(&self, key: Key) -> Result<(), CmdError> {
+        const KP_PAUSE: Duration = Duration::from_millis(50);
+
+        self.clone()
+            .client()
+            .perform_actions(
+                KeyActions::new("send_key".to_string())
+                    .then(KeyAction::Down { value: key.into() })
+                    .then(KeyAction::Pause { duration: KP_PAUSE })
+                    .then(KeyAction::Up { value: key.into() }),
+            )
+            .await
     }
 }
