@@ -75,11 +75,14 @@ impl Client {
 
         let caps = match headless {
             false => json!({}),
-            true => json!({
-                "moz:firefoxOptions": { "args": ["-headless"] },
-                "goog:chromeOptions": { "args": ["headless", "disable-gpu"] },
-                "ms:edgeOptions": { "args": ["--headless"] }
-            }),
+            true => {
+                info!("headless is true, starting headless webdriver session");
+                json!({
+                    "moz:firefoxOptions": { "args": ["-headless"] },
+                    "goog:chromeOptions": { "args": ["headless", "disable-gpu"] },
+                    "ms:edgeOptions": { "args": ["--headless"] }
+                })
+            }
         }
         .as_object()
         .cloned()
@@ -92,7 +95,7 @@ impl Client {
                 match builder.connect("http://localhost:4444").await {
                     Ok(client) => break client,
                     Err(err) => {
-                        error!("failed to connect to WebDriver server, retrying: {err}");
+                        error!("failed to connect to webdriver server, retrying: {err}");
                         time::sleep(RETRY_DELAY).await;
                     }
                 }
@@ -113,9 +116,9 @@ impl Deref for Client {
 impl Drop for Client {
     fn drop(&mut self) {
         match self.keepalive {
-            true => info!("keepalive is true, leaving WebDriver session as-is"),
+            true => info!("keepalive is true, leaving webdriver session as-is"),
             false => {
-                info!("keepalive is false, closing WebDriver session");
+                info!("keepalive is false, closing webdriver session");
                 runtime::Handle::current().spawn(self.inner.clone().close());
             }
         }

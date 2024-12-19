@@ -78,7 +78,7 @@ pub async fn get(
 pub enum TokenError {
     #[error("session error: {0}")]
     Session(#[from] NewSessionError),
-    #[error("WebDriver command error: {0}")]
+    #[error("webdriver command error: {0}")]
     WebDriverCommand(#[from] CmdError),
 }
 

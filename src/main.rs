@@ -1,11 +1,11 @@
 mod token;
 mod wd;
 
-use std::{env, io};
+use std::{env, io, time::Duration};
 
 use eyre::{bail, Result};
-use tokio::main;
-use tracing::error;
+use tokio::{main, time};
+use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
 #[main(flavor = "current_thread")]
@@ -22,6 +22,8 @@ async fn main() -> Result<()> {
 
     let wd_exec = env::var("WEBDRIVER_EXEC")?;
     let wd_server = wd::Server::spawn(&wd_exec)?;
+    info!("spawned webdriver server, waiting for it to start up");
+    time::sleep(Duration::from_millis(500)).await;
 
     let email = env::var("GIMAIL")?;
     let passwd = env::var("GIPASS")?;
