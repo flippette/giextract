@@ -1,3 +1,4 @@
+mod exercise;
 mod idex;
 mod token;
 mod wd;
@@ -8,6 +9,11 @@ use eyre::{bail, Result};
 use tokio::{main, time};
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
+
+use exercise::Exercise;
+
+pub const API_URL: &str = "https://api-britishcouncil.gelielts.com";
+pub const REFERER: &str = "https://britishcouncil.gelielts.com";
 
 #[main(flavor = "current_thread")]
 async fn main() -> Result<()> {
@@ -47,13 +53,28 @@ async fn main() -> Result<()> {
             env!("CARGO_PKG_VERSION")
         ))
         .build()?;
-    let library = idex::library(&rq_client, &token).await?;
+    let mut library = idex::library(&rq_client, &token).await?;
     info!("got library exercise ids");
-    let tracker = idex::tracker(&rq_client, &token).await?;
+    let mut tracker = idex::tracker(&rq_client, &token).await?;
     info!("got tracker exercise ids");
 
-    println!("{library:?}");
-    println!("{tracker:?}");
+    library.sort_unstable();
+    tracker.sort_unstable();
+
+    let mut ids = library;
+    tracker.into_iter().for_each(|id| {
+        if !ids.contains(&id) {
+            ids.push(id);
+        }
+    });
+    ids.sort_unstable();
+
+    println!("{ids:?}");
+
+    for id in ids {
+        let _ex = Exercise::fetch_id(&rq_client, &token, id).await?;
+        info!("fetched exercise {id}");
+    }
 
     Ok(())
 }

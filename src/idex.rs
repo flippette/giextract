@@ -4,8 +4,7 @@ use std::num::ParseIntError;
 
 use serde::Deserialize;
 
-const API_URL: &str = "https://api-britishcouncil.gelielts.com";
-const REFERER: &str = "https://britishcouncil.gelielts.com";
+use crate::{API_URL, REFERER};
 
 /// Extract the list of exercise IDs from the
 /// `/ielts/library/practice-tests/reading` endpoint.
@@ -64,7 +63,7 @@ pub async fn tracker(client: &reqwest::Client, token: &str) -> Result<Vec<u32>, 
     #[derive(Deserialize)]
     #[serde(rename_all = "camelCase", tag = "actionType")]
     enum Exercise {
-        IeltsExercise { id: u32 },
+        IeltsExercise { id: u32, paper: String },
         IeltsPlaylist { id: u32 },
         Speaking { id: String },
     }
@@ -79,8 +78,8 @@ pub async fn tracker(client: &reqwest::Client, token: &str) -> Result<Vec<u32>, 
     Ok(tracker.history
         .into_iter()
         .filter_map(|exercise| match exercise {
-            Exercise::Speaking { .. } => None,
-            Exercise::IeltsExercise { id } | Exercise::IeltsPlaylist { id } => Some(id)
+            Exercise::IeltsExercise { id, paper } if paper == "Academic Reading" => Some(id),
+            _ => None
         })
         .collect())
 }
