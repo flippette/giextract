@@ -1,3 +1,4 @@
+mod idex;
 mod token;
 mod wd;
 
@@ -37,8 +38,22 @@ async fn main() -> Result<()> {
             Err(err) => bail!("token::get failed: {err}"),
         }
     };
+    info!("got token");
 
-    println!("{token}");
+    let rq_client = reqwest::Client::builder()
+        .user_agent(concat!(
+            env!("CARGO_PKG_NAME"),
+            "/",
+            env!("CARGO_PKG_VERSION")
+        ))
+        .build()?;
+    let library = idex::library(&rq_client, &token).await?;
+    info!("got library exercise ids");
+    let tracker = idex::tracker(&rq_client, &token).await?;
+    info!("got tracker exercise ids");
+
+    println!("{library:?}");
+    println!("{tracker:?}");
 
     Ok(())
 }

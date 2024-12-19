@@ -86,7 +86,7 @@ impl Client {
         }
         .as_object()
         .cloned()
-        .expect("hardcoded JSON should be correct");
+        .expect("hardcoded json should be correct");
 
         let mut builder = fantoccini::ClientBuilder::new(HttpConnector::new());
         let builder = builder.capabilities(caps);
