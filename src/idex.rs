@@ -1,7 +1,5 @@
 //! GEL IELTS exercise ID (library + tracker) extractor.
 
-use std::num::ParseIntError;
-
 use serde::Deserialize;
 
 use crate::{API_URL, REFERER};
@@ -24,18 +22,7 @@ pub async fn library(client: &reqwest::Client, token: &str) -> Result<Vec<u32>, 
         exercises: Vec<Exercise>,
     }
     #[derive(Deserialize)]
-    #[serde(try_from = "ExerciseRaw")]
     struct Exercise { id: u32 }
-    #[derive(Deserialize)]
-    struct ExerciseRaw { id: String }
-
-    impl TryFrom<ExerciseRaw> for Exercise {
-        type Error = ParseIntError;
-
-        fn try_from(raw: ExerciseRaw) -> Result<Self, Self::Error> {
-            Ok(Self { id: raw.id.parse()? })
-        }
-    }
 
     let library = client
         .get(format!("{API_URL}/ielts/library/practice-tests/reading"))
