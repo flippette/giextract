@@ -16,6 +16,7 @@ pub struct Exercise {
     pub answers: Option<Vec<String>>,
 }
 
+/// The `interaction` field of an exercise API response.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct Interaction {
@@ -24,12 +25,14 @@ pub struct Interaction {
     pub questions: Vec<Question>,
 }
 
+/// The `interaction_type` field of an [`Interaction`].
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InteractionType {
     Cloze,
 }
 
+/// A `question` field entry of an [`Interaction`].
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct Question {
@@ -40,6 +43,7 @@ pub struct Question {
     pub wordlist: Vec<String>,
 }
 
+/// The `question_text` field of a [`Question`].
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct QuestionData {
@@ -47,6 +51,7 @@ pub struct QuestionData {
     pub text: String,
 }
 
+/// Error returned during exercise fetching.
 #[derive(Debug, Error)]
 pub enum ExerciseError {
     #[error("reqwest error: {0}")]
@@ -59,7 +64,7 @@ pub enum ExerciseError {
 
 impl Exercise {
     pub async fn fetch_id(
-        rq_client: &reqwest::Client,
+        client: &reqwest::Client,
         token: &str,
         id: u32,
     ) -> Result<Self, ExerciseError> {
@@ -70,7 +75,7 @@ impl Exercise {
             interaction: Interaction,
         }
 
-        let api_data = rq_client
+        let api_data = client
             .get(format!("{API_URL}/exercise/{id}"))
             .bearer_auth(token)
             .header("referer", REFERER)
