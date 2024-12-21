@@ -12,7 +12,39 @@ use crate::{API_URL, REFERER};
 pub struct Exercise {
     pub instructions: String,
     pub general_question: String,
+    pub interaction: Interaction,
     pub answers: Option<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct Interaction {
+    #[serde(rename = "interaction_type")]
+    pub ty: InteractionType,
+    pub questions: Vec<Question>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InteractionType {
+    Cloze,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct Question {
+    #[serde(rename = "question_id")]
+    pub id: u32,
+    #[serde(rename = "question_data")]
+    pub data: QuestionData,
+    pub wordlist: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct QuestionData {
+    #[serde(rename = "question_text")]
+    pub text: String,
 }
 
 #[derive(Debug, Error)]
@@ -35,6 +67,7 @@ impl Exercise {
         struct ApiData {
             instructions: String,
             general_question: String,
+            interaction: Interaction,
         }
 
         let api_data = rq_client
@@ -49,6 +82,7 @@ impl Exercise {
         Ok(Exercise {
             instructions: api_data.instructions,
             general_question: api_data.general_question,
+            interaction: api_data.interaction,
             answers: None,
         })
     }

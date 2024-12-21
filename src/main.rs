@@ -53,26 +53,19 @@ async fn main() -> Result<()> {
             env!("CARGO_PKG_VERSION")
         ))
         .build()?;
-    let mut library = idex::library(&rq_client, &token).await?;
-    info!("got library exercise ids");
-    let mut tracker = idex::tracker(&rq_client, &token).await?;
-    info!("got tracker exercise ids");
 
-    library.sort_unstable();
-    tracker.sort_unstable();
-
-    let mut ids = library;
-    tracker.into_iter().for_each(|id| {
-        if !ids.contains(&id) {
-            ids.push(id);
-        }
-    });
+    let library = idex::library(&rq_client, &token).await?;
+    let tracker = idex::tracker(&rq_client, &token).await?;
+    let mut ids = library
+        .iter()
+        .chain(tracker.iter().filter(|id| !library.contains(id)))
+        .copied()
+        .collect::<Vec<_>>();
     ids.sort_unstable();
-
-    println!("{ids:?}");
 
     for id in ids {
         let _ex = Exercise::fetch_id(&rq_client, &token, id).await?;
+        println!("{_ex:#?}");
         info!("fetched exercise {id}");
     }
 
