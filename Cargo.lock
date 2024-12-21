@@ -385,6 +385,7 @@ dependencies = [
 name = "giextract"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "color-eyre",
  "dotenvy",
  "eyre",
@@ -398,6 +399,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "xxtea",
 ]
 
 [[package]]
@@ -1824,6 +1826,12 @@ name = "writeable"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
+
+[[package]]
+name = "xxtea"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e52655abf007cc0520d91ac9e89d4fd34d5eb7462269d24b6c29edea6e47c29c"
 
 [[package]]
 name = "yoke"

@@ -5,12 +5,14 @@ edition = "2021"
 authors = ["flippette <me@flippo.cc>"]
 
 [dependencies]
+base64 = "0.22"
 color-eyre = "0.6"
 dotenvy = "0.15"
 eyre = "0.6"
 serde_json = "1"
 thiserror = "2"
 tracing = "0.1"
+xxtea = "0.2"
 
 [dependencies.fantoccini]
 version = "0.21"
@@ -19,7 +21,7 @@ default-features = false
 [dependencies.futures-util]
 version = "0.3"
 default-features = false
-featuers = ["async-await", "std"]
+features = ["async-await", "std"]
 
 [dependencies.hyper-util]
 version = "0.1"
