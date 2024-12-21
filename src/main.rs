@@ -6,6 +6,7 @@ mod wd;
 use std::{env, io, time::Duration};
 
 use eyre::{bail, Result};
+use futures_util::{stream::FuturesUnordered, StreamExt};
 use tokio::{main, time};
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
@@ -62,12 +63,22 @@ async fn main() -> Result<()> {
         .copied()
         .collect::<Vec<_>>();
     ids.sort_unstable();
+    info!("fetching {} exercises", ids.len());
 
-    for id in ids {
-        let _ex = Exercise::fetch_id(&rq_client, &token, id).await?;
-        println!("{_ex:#?}");
-        info!("fetched exercise {id}");
-    }
+    let exercises = ids
+        .into_iter()
+        .map(async |id| (Exercise::fetch_id(&rq_client, &token, id).await, id))
+        .collect::<FuturesUnordered<_>>()
+        .inspect(|(res, id)| match res {
+            Ok(_) => info!("fetched exercise {id}"),
+            Err(err) => error!("failed to fetch exercise {id}: {err}"),
+        })
+        .filter_map(async |(res, _)| res.ok())
+        .collect::<Vec<_>>()
+        .await;
+    info!("fetched {} exercises", exercises.len());
+
+    println!("{exercises:#?}");
 
     Ok(())
 }

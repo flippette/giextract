@@ -389,6 +389,7 @@ dependencies = [
  "dotenvy",
  "eyre",
  "fantoccini",
+ "futures-util",
  "hyper-util",
  "reqwest",
  "serde",

@@ -16,6 +16,11 @@ tracing = "0.1"
 version = "0.21"
 default-features = false
 
+[dependencies.futures-util]
+version = "0.3"
+default-features = false
+featuers = ["async-await", "std"]
+
 [dependencies.hyper-util]
 version = "0.1"
 features = ["client-legacy"]
